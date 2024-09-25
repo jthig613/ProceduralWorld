@@ -31,7 +31,7 @@ void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale,
         for (int32 Y = 0; Y < ChunkSize; Y++)
         {
             // Use TerrainGenerator to generate a noise value for height
-            float NoiseValue = TerrainGenerator::GenerateNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, NoiseScale, NoiseStrength);
+            float NoiseValue = TerrainGenerator::GenerateNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, NoiseScale, NoiseStrength, Seed);
             UE_LOG(LogTemp, Warning, TEXT("Noise Value: %f"), NoiseValue);
             
             // Scale the noise value to get a usable height

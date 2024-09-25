@@ -5,7 +5,8 @@
 #include "Math/UnrealMathUtility.h"
 
 
-float TerrainGenerator::GenerateNoise(float X, float Y, float NoiseScale, float NoiseStrength)
+
+float TerrainGenerator::GenerateNoise(float X, float Y, float NoiseScale, float NoiseStrength, int32 Seed)
 {
     
     /*FastNoiseLite NoiseGenerator;

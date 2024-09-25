@@ -10,7 +10,7 @@
 class PROCEDURALTERRAIN_API TerrainGenerator
 {
 public:
-	static float GenerateNoise(float X, float Y, float NoiseScale, float NoiseStrength);
+	static float GenerateNoise(float X, float Y, float NoiseScale, float NoiseStrength, int32 Seed);
 
 	static float Generate3DNoise(float X, float Y, float Z, float NoiseScale, float NoiseStrength);
 };
