@@ -41,6 +41,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	float CaveThreshold;
 
+	UPROPERTY(EditAnywhere, Category = "World Settings")
+	float TempScale;          // The scale of the noise
+	UPROPERTY(EditAnywhere, Category = "World Settings")
+	float MoistureScale;          // The scale of the noise
+
+	;
+
 	/*Seed: Controls the randomness of the noise generation.Using the same seed will produce the same terrain.You can change this dynamically to get different terrain features.
 
 	NoiseScale : Affects how stretched or compressed the noise pattern is.Smaller values(e.g., 0.01) will result in larger, smoother hills, while larger values(e.g., 0.1) will produce more detail and "noise" in the terrain.
@@ -60,4 +67,7 @@ private:
 
 	void LoadChunk(FIntVector ChunkCoords);
 	void UnloadChunk(FIntVector ChunkCoords);
+
+	UPROPERTY(EditAnywhere, Category = "World Settings")
+	TSubclassOf<class AChunk> ChunkClass;
 };

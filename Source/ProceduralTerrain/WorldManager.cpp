@@ -10,11 +10,16 @@ AWorldManager::AWorldManager() :
     NoiseStrength(4.f),
     CaveNoiseScale(0.08f),
     CaveNoiseStrength(10.f),
-    CaveThreshold(0.3f)
+    CaveThreshold(0.3f),
+    TempScale(0.02f),
+    MoistureScale(0.03f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+    /*static ConstructorHelpers::FClassFinder<AChunk> 
+    ChunkBPClass(TEXT("/Game/Blueprints/BP_Chunk"));
+    ChunkClass = ChunkBPClass.Class;*/
 }
 
 void AWorldManager::UpdateWorld(FVector PlayerPosition)
@@ -60,12 +65,26 @@ void AWorldManager::LoadChunk(FIntVector ChunkCoords)
 {
     FVector ChunkPosition(ChunkCoords.X * ChunkSize * 100, ChunkCoords.Y * ChunkSize * 100, 0);
 
-    AChunk* NewChunk = GetWorld()->SpawnActor<AChunk>(ChunkPosition, FRotator::ZeroRotator);
+    //static ConstructorHelpers::FClassFinder<AChunk> ChunkBPClass(TEXT("/Game/Blueprints/BP_Chunk"));
+
+    if (ChunkClass)
+    {
+        // Spawn the BP_Chunk
+        AChunk* NewChunk = GetWorld()->SpawnActor<AChunk>(ChunkClass, ChunkPosition, FRotator::ZeroRotator);
+
+        NewChunk->InitializeChunk(ChunkPosition, ChunkSize, 100);
+        NewChunk->GenerateChunk(BlockMesh, Seed, NoiseScale, NoiseStrength, TempScale, MoistureScale);
+        LoadedChunks.Add(ChunkCoords, NewChunk);
+    }
+
+
+    ///////////
+    /*AChunk* NewChunk = GetWorld()->SpawnActor<AChunk>(ChunkPosition, FRotator::ZeroRotator);
 
 
     NewChunk->InitializeChunk(ChunkPosition, ChunkSize, 100);
-    NewChunk->GenerateChunk(BlockMesh, Seed, NoiseScale, NoiseStrength);
-    LoadedChunks.Add(ChunkCoords, NewChunk);
+    NewChunk->GenerateChunk(BlockMesh, Seed, NoiseScale, NoiseStrength, TempScale, MoistureScale);
+    LoadedChunks.Add(ChunkCoords, NewChunk);*/
 }
 
 void AWorldManager::UnloadChunk(FIntVector ChunkCoords)

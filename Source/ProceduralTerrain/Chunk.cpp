@@ -5,6 +5,7 @@
 #include "Engine/InstancedStaticMesh.h"
 #include "TerrainGenerator.h"
 
+
 // Sets default values
 AChunk::AChunk()
 {
@@ -22,7 +23,7 @@ void AChunk::InitializeChunk(FVector InChunkPosition, int32 InChunkSize, int32 I
 	BlockSize = InBlockSize;
 }
 
-void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength)
+void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale)
 {
     BlockMeshComponent->SetStaticMesh(BlockMesh);
     // Simple noise-based generation for terrain height
@@ -42,9 +43,19 @@ void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale,
             // Ensure height is within a valid range (e.g., minimum height 1)
             Height = FMath::Clamp(Height, 1, ChunkSize);
 
+            // Generate temperature and moisture values for biome determination
+            float Temperature = TerrainGenerator::GenerateTemperatureNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, TempScale, NoiseStrength, Seed);
+            float Moisture = TerrainGenerator::GenerateMoistureNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, MoistureScale, NoiseStrength, Seed);
+
+            // Determine the biome based on temperature and moisture
+            EBiomeType Biome = TerrainGenerator::DetermineBiome(Temperature, Moisture);
+
+            // Set block material based on biome
+            UMaterialInterface* BlockMaterial = GetBiomeMaterial(Biome);
+
             for (int32 Z = 0; Z < Height; Z++)
             {
-                AddBlock(X, Y, Z, BlockMesh); // Pass the appropriate block mesh
+                AddBlock(X, Y, Z, BlockMesh, BlockMaterial); // Pass the appropriate block mesh
             }
         }
     }
@@ -77,10 +88,39 @@ void AChunk::Tick(float DeltaTime)
 
 }
 
-void AChunk::AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh)
+UMaterialInterface* AChunk::GetBiomeMaterial(EBiomeType Biome)
+{
+    switch (Biome)
+    {
+    case EBiomeType::Desert:
+        return DesertMaterial;
+    case EBiomeType::Forest:
+        return ForestMaterial;
+    case EBiomeType::Tundra:
+        return TundraMaterial;
+    case EBiomeType::Plains:
+        return PlainsMaterial;
+    default:
+        return DefaultMaterial;
+    }
+}
+
+void AChunk::AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh, UMaterialInterface* BlockMaterial)
 {
     FVector BlockLocation = FVector(X * BlockSize, Y * BlockSize, Z * BlockSize);
     FTransform BlockTransform(FRotator(0, 0, 0), BlockLocation);
-    BlockMeshComponent->AddInstance(BlockTransform);
+
+    // Create the instanced static mesh for this block
+    int32 InstanceIndex = BlockMeshComponent->AddInstance(BlockTransform);
+
+    // Set the material for this block instance based on the biome
+    if (BlockMaterial)
+    {
+        BlockMeshComponent->SetMaterial(InstanceIndex, BlockMaterial);
+    }
+    else {
+        UE_LOG(LogTemp, Warning, TEXT("No material added"));
+    }
+    //BlockMeshComponent->AddInstance(BlockTransform);
 }
 

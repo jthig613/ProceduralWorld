@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Materials/MaterialInterface.h"
+#include "BiomeType.h"
 #include "Chunk.generated.h"
 
 UCLASS()
@@ -19,7 +21,7 @@ public:
 	void InitializeChunk(FVector InChunkPosition, int32 InChunkSize, int32 InBlockSize);
 
 	// Generate the blocks in this chunk
-	void GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength);
+	void GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale);
 
 	// Set up LOD for the chunk
 	void UpdateLOD(float PlayerDistance);
@@ -32,6 +34,20 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Biomes")
+	UMaterialInterface* DesertMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Biomes")
+	UMaterialInterface* ForestMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Biomes")
+	UMaterialInterface* TundraMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Biomes")
+	UMaterialInterface* PlainsMaterial;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Biomes")
+	UMaterialInterface* DefaultMaterial;
 
 private:
 	UPROPERTY()
@@ -41,5 +57,7 @@ private:
 	int32 ChunkSize;
 	int32 BlockSize;
 
-	void AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh);
+	UMaterialInterface* GetBiomeMaterial(EBiomeType Biome);
+
+	void AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh, UMaterialInterface* BlockMaterial);
 };
