@@ -21,7 +21,7 @@ public:
 	void InitializeChunk(FVector InChunkPosition, int32 InChunkSize, int32 InBlockSize);
 
 	// Generate the blocks in this chunk
-	void GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale);
+	void GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale, EBiomeType NewBiome);
 
 	// Set up LOD for the chunk
 	void UpdateLOD(float PlayerDistance);

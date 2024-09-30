@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Chunk.h"
+#include "BiomeType.h"
 #include "WorldManager.generated.h"
 
 UCLASS()
@@ -46,7 +47,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	float MoistureScale;          // The scale of the noise
 
-	;
+
+	//Need to adjust biome generation to create "regions" rather than each chunk loading a single biome
+	// Adjust the number of chunks a biome should span
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Terrain")
+	int32 BiomeSizeInChunks; // Number of chunks per biome
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Biome")
+	int32 BiomeMapSize; // Number of biome cells on each axis
+
 
 	/*Seed: Controls the randomness of the noise generation.Using the same seed will produce the same terrain.You can change this dynamically to get different terrain features.
 
@@ -70,4 +79,10 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	TSubclassOf<class AChunk> ChunkClass;
+
+	// Biome map for determining biome per region of chunks
+	TArray<EBiomeType> BiomeMap;
+
+	void GenerateBiomeMap(int32 Seed);
+	EBiomeType GetBiomeForChunk(FIntVector ChunkCoords);
 };

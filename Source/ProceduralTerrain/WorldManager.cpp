@@ -3,6 +3,7 @@
 
 #include "WorldManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "TerrainGenerator.h"
 
 // Sets default values
 AWorldManager::AWorldManager() :
@@ -12,7 +13,9 @@ AWorldManager::AWorldManager() :
     CaveNoiseStrength(10.f),
     CaveThreshold(0.3f),
     TempScale(0.02f),
-    MoistureScale(0.03f)
+    MoistureScale(0.03f),
+    BiomeSizeInChunks(4),
+    BiomeMapSize(32)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -49,6 +52,8 @@ void AWorldManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    // Generate the biome map
+    GenerateBiomeMap(Seed);
 }
 
 // Called every frame
@@ -72,13 +77,17 @@ void AWorldManager::LoadChunk(FIntVector ChunkCoords)
         // Spawn the BP_Chunk
         AChunk* NewChunk = GetWorld()->SpawnActor<AChunk>(ChunkClass, ChunkPosition, FRotator::ZeroRotator);
 
+
+        // Get the biome for this chunk
+        EBiomeType Biome = GetBiomeForChunk(ChunkCoords);
+
         NewChunk->InitializeChunk(ChunkPosition, ChunkSize, 100);
-        NewChunk->GenerateChunk(BlockMesh, Seed, NoiseScale, NoiseStrength, TempScale, MoistureScale);
+        NewChunk->GenerateChunk(BlockMesh, Seed, NoiseScale, NoiseStrength, TempScale, MoistureScale, Biome);
         LoadedChunks.Add(ChunkCoords, NewChunk);
     }
 
 
-    ///////////
+    /////////////
     /*AChunk* NewChunk = GetWorld()->SpawnActor<AChunk>(ChunkPosition, FRotator::ZeroRotator);
 
 
@@ -94,5 +103,42 @@ void AWorldManager::UnloadChunk(FIntVector ChunkCoords)
         (*ChunkPtr)->Destroy();
         LoadedChunks.Remove(ChunkCoords);
     }
+}
+
+void AWorldManager::GenerateBiomeMap(int32 seed)
+{
+    // Resize biome map to hold values for each region (BiomeMapSize x BiomeMapSize)
+    BiomeMap.SetNum(BiomeMapSize * BiomeMapSize);
+
+    // Generate biomes for each region of chunks
+    for (int32 X = 0; X < BiomeMapSize; X++)
+    {
+        for (int32 Y = 0; Y < BiomeMapSize; Y++)
+        {
+
+            float Temperature = TerrainGenerator::GenerateTemperatureNoise(X, Y, TempScale, NoiseStrength, seed);// Low resolution noise for biomes
+            UE_LOG(LogTemp, Warning, TEXT("Temp Value: %f"), Temperature);
+            float Moisture = TerrainGenerator::GenerateMoistureNoise(X, Y, MoistureScale, NoiseStrength, seed);
+            UE_LOG(LogTemp, Warning, TEXT("Moist Value: %f"), Moisture);
+            EBiomeType Biome = TerrainGenerator::DetermineBiome(Temperature, Moisture);
+
+            // Store the biome in the biome map
+            BiomeMap[X + Y * BiomeMapSize] = Biome;
+        }
+    }
+}
+
+EBiomeType AWorldManager::GetBiomeForChunk(FIntVector ChunkCoords)
+{
+    // Determine which "biome cell" the chunk belongs to
+    int32 BiomeX = ChunkCoords.X / BiomeSizeInChunks;
+    int32 BiomeY = ChunkCoords.Y / BiomeSizeInChunks;
+
+    // Clamp to valid biome map range
+    BiomeX = FMath::Clamp(BiomeX, 0, BiomeMapSize - 1);
+    BiomeY = FMath::Clamp(BiomeY, 0, BiomeMapSize - 1);
+
+    // Return the biome for this chunk's region
+    return BiomeMap[BiomeX + BiomeY * BiomeMapSize];
 }
 

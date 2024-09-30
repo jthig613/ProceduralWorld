@@ -3,6 +3,7 @@
 
 #include "Chunk.h"
 #include "Engine/InstancedStaticMesh.h"
+#include "BiomeType.h"
 #include "TerrainGenerator.h"
 
 
@@ -23,8 +24,11 @@ void AChunk::InitializeChunk(FVector InChunkPosition, int32 InChunkSize, int32 I
 	BlockSize = InBlockSize;
 }
 
-void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale)
+void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale, EBiomeType NewBiome)
 {
+
+    // Set block material based on biome
+    UMaterialInterface* BlockMaterial = GetBiomeMaterial(NewBiome);
     BlockMeshComponent->SetStaticMesh(BlockMesh);
     // Simple noise-based generation for terrain height
     for (int32 X = 0; X < ChunkSize; X++)
@@ -44,14 +48,14 @@ void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale,
             Height = FMath::Clamp(Height, 1, ChunkSize);
 
             // Generate temperature and moisture values for biome determination
-            float Temperature = TerrainGenerator::GenerateTemperatureNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, TempScale, NoiseStrength, Seed);
-            float Moisture = TerrainGenerator::GenerateMoistureNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, MoistureScale, NoiseStrength, Seed);
+            //float Temperature = TerrainGenerator::GenerateTemperatureNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, TempScale, NoiseStrength, Seed);
+            //float Moisture = TerrainGenerator::GenerateMoistureNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, MoistureScale, NoiseStrength, Seed);
 
             // Determine the biome based on temperature and moisture
-            EBiomeType Biome = TerrainGenerator::DetermineBiome(Temperature, Moisture);
+            //EBiomeType Biome = TerrainGenerator::DetermineBiome(Temperature, Moisture);
 
             // Set block material based on biome
-            UMaterialInterface* BlockMaterial = GetBiomeMaterial(Biome);
+           //UMaterialInterface* BlockMaterial = GetBiomeMaterial(NewBiome);
 
             for (int32 Z = 0; Z < Height; Z++)
             {
