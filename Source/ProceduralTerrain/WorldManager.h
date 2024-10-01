@@ -30,6 +30,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	int32 Seed;              // A fixed seed value or you could generate one
+
+	//Temp seed 8622241
+
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	float NoiseScale;          // The scale of the noise
 	UPROPERTY(EditAnywhere, Category = "World Settings")

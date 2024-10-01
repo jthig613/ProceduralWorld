@@ -30,7 +30,7 @@ float TerrainGenerator::GenerateMoistureNoise(float X, float Y, float NoiseScale
 EBiomeType TerrainGenerator::DetermineBiome(float Temperature, float Moisture)
 {
     // Determine the biome type based on temperature and moisture.
-    if (Temperature > 1.5f && Moisture < 0.1f)
+    if (Temperature > 1.5f)
     {
         return EBiomeType::Desert;
     }
@@ -38,7 +38,7 @@ EBiomeType TerrainGenerator::DetermineBiome(float Temperature, float Moisture)
     {
         return EBiomeType::Forest;
     }
-    else if (Temperature < 0.1f)
+    else if (Temperature < -0.1f)
     {
         return EBiomeType::Tundra;
     }
