@@ -3,6 +3,7 @@
 
 #include "Chunk.h"
 #include "Engine/InstancedStaticMesh.h"
+#include "Kismet/GameplayStatics.h"
 #include "BiomeType.h"
 #include "TerrainGenerator.h"
 
@@ -90,6 +91,17 @@ void AChunk::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    ////// LOD
+    FVector PlayerPosition = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
+    auto Distance = PlayerPosition - GetActorLocation();
+    float DLength = Distance.Length();
+    UpdateLOD(DLength);
+    ////// LOD
+
+
+
+
+    
 }
 
 UMaterialInterface* AChunk::GetBiomeMaterial(EBiomeType Biome)
