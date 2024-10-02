@@ -21,6 +21,12 @@ AWorldManager::AWorldManager() :
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+    LastChunkUpdatePosition = FVector::ZeroVector;
+    LastUpdateTime = 0.0f;
+
+    MinDistanceToUpdateChunks = 500.0f; // Player needs to move at least 500 units
+    UpdateInterval = 2.0f;
+
     /*static ConstructorHelpers::FClassFinder<AChunk> 
     ChunkBPClass(TEXT("/Game/Blueprints/BP_Chunk"));
     ChunkClass = ChunkBPClass.Class;*/
@@ -81,6 +87,12 @@ void AWorldManager::Tick(float DeltaTime)
             PlayerPosition = PlayerPawn->GetActorLocation();
         }
     }
+
+    // Check if we should update chunks based on player movement or time
+   /* if (ShouldUpdateChunks(PlayerPosition))
+    {
+        UpdateChunks(PlayerPosition);
+    }*/
 	// Get player location
 	//PlayerPosition = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
 	//UpdateWorld(PlayerPosition);
@@ -118,14 +130,6 @@ void AWorldManager::LoadChunk(FIntVector ChunkCoords)
     LoadedChunks.Add(ChunkCoords, NewChunk);*/
 }
 
-void AWorldManager::UnloadChunk(FIntVector ChunkCoords)
-{
-    if (AChunk** ChunkPtr = LoadedChunks.Find(ChunkCoords))
-    {
-        (*ChunkPtr)->Destroy();
-        LoadedChunks.Remove(ChunkCoords);
-    }
-}
 
 void AWorldManager::GenerateBiomeMap(int32 seed)
 {
@@ -180,6 +184,99 @@ ELODLevel AWorldManager::CalculateLODLevel(FVector ChunkPosition)
     else
     {
         return ELODLevel::LOD_Low;
+    }
+}
+
+void AWorldManager::UpdateChunks(FVector playerposition)
+{
+    // Step 1: Convert PlayerPosition into chunk coordinates
+    FIntVector PlayerChunkCoord = GetChunkCoordinates(PlayerPosition);
+
+    // Step 2: Unload chunks that are too far from the player
+    for (auto It = LoadedChunks.CreateIterator(); It; ++It)
+    {
+        FIntVector ChunkCoord = It->Key;
+        FVector ChunkCenter = GetChunkCenter(ChunkCoord);
+
+        float Distance = FVector::Dist(PlayerPosition, ChunkCenter);
+        if (Distance > UnloadDistance)
+        {
+            // Unload chunk if it is beyond the unload distance
+            UnloadChunk(ChunkCoord);
+            It.RemoveCurrent();  // Remove from active chunk list
+        }
+    }
+
+    // Step 3: Load new chunks near the player
+    for (int X = -GridSize; X <= GridSize; ++X)
+    {
+        for (int Y = -GridSize; Y <= GridSize; ++Y)
+        {
+            FIntVector ChunkCoord = PlayerChunkCoord + FIntVector(X, Y, 0);
+            FVector ChunkCenter = GetChunkCenter(ChunkCoord);
+
+            float Distance = FVector::Dist(PlayerPosition, ChunkCenter);
+            if (Distance < LoadDistance && !LoadedChunks.Contains(ChunkCoord))
+            {
+                // Load chunk if it's within the load distance and not already loaded
+                LoadChunk(ChunkCoord);
+                LoadedChunks.Add(ChunkCoord);
+            }
+        }
+    }
+}
+
+FVector AWorldManager::GetChunkCenter(FIntVector ChunkCoord)
+{
+    // Calculate the center of the chunk based on its coordinates
+    return FVector(ChunkCoord.X * ChunkSize + ChunkSize / 2,
+        ChunkCoord.Y * ChunkSize + ChunkSize / 2,
+        0);
+}
+
+FIntVector AWorldManager::GetChunkCoordinates(FVector Position)
+{
+    // Convert world position to chunk coordinates
+    return FIntVector(FMath::FloorToInt(Position.X / ChunkSize),
+        FMath::FloorToInt(Position.Y / ChunkSize),
+        FMath::FloorToInt(Position.Z / ChunkSize));
+}
+
+bool AWorldManager::ShouldUpdateChunks(FVector playerposition)
+{
+    // Get the current game time in seconds
+    float CurrentTime = GetWorld()->GetTimeSeconds();
+
+    // Calculate the distance between the player's current position and the last update position
+    float Distance = FVector::Dist(PlayerPosition, LastChunkUpdatePosition);
+
+    // Check if the player has moved far enough or enough time has passed
+    if (Distance > MinDistanceToUpdateChunks || CurrentTime - LastUpdateTime > UpdateInterval)
+    {
+        // Update both the last update position and time
+        LastChunkUpdatePosition = PlayerPosition;
+        LastUpdateTime = CurrentTime;
+        return true;  // Update chunks
+    }
+
+    return false;  // No update needed yet
+}
+
+void AWorldManager::UnloadChunk(FIntVector ChunkCoords)
+{
+    if (AChunk** ChunkPtr = LoadedChunks.Find(ChunkCoords))
+    {
+        (*ChunkPtr)->Destroy();
+        LoadedChunks.Remove(ChunkCoords);
+    }
+
+    // Implement chunk unloading logic here
+    if (AActor* Chunk = LoadedChunks[ChunkCoords])
+    {
+        //UE_LOG(LogTemp, Warning, TEXT("Unloading chunk at: %s"), *ChunkCoord.ToString());
+
+        // Optionally pool or destroy chunk actors
+        Chunk->Destroy();  // Or deactivate and pool the chunk
     }
 }
 

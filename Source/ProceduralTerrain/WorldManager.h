@@ -35,6 +35,21 @@ public:
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	int32 RenderDistance;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "LOD")
+	float LoadDistance = 5000.0f;   // Distance within which chunks should be loaded
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "LOD")
+	float UnloadDistance = 6000.0f; // Distance beyond which chunks should be unloaded
+
+	// Player tracking for chunk updates
+	FVector LastChunkUpdatePosition; // Last player position when chunks were updated
+	float LastUpdateTime;            // Last time the chunks were updated
+
+	// Adjustable parameters
+	float MinDistanceToUpdateChunks; // Minimum distance player needs to move to trigger chunk update
+	float UpdateInterval;
+
+
+
 	//the grid of the map
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	int32 GridSize;
@@ -104,4 +119,14 @@ private:
 	EBiomeType GetBiomeForChunk(FIntVector ChunkCoords);
 
 	ELODLevel CalculateLODLevel(FVector ChunkPosition);
+
+
+	//Chunk loading
+	void UpdateChunks(FVector playerposition);
+
+	FVector GetChunkCenter(FIntVector ChunkCoord);
+
+	FIntVector GetChunkCoordinates(FVector Position);
+
+	bool ShouldUpdateChunks(FVector playerposition);
 };
