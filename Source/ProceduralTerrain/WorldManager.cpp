@@ -15,7 +15,8 @@ AWorldManager::AWorldManager() :
     TempScale(0.02f),
     MoistureScale(0.03f),
     BiomeSizeInChunks(4),
-    BiomeMapSize(32)
+    BiomeMapSize(32),
+    GridSize(10)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -25,27 +26,27 @@ AWorldManager::AWorldManager() :
     ChunkClass = ChunkBPClass.Class;*/
 }
 
-void AWorldManager::UpdateWorld(FVector PlayerPosition)
-{
-    // Calculate current chunk coordinates based on player position
-    FIntVector PlayerChunkCoords(
-        FMath::FloorToInt(PlayerPosition.X / (ChunkSize * 100)),
-        FMath::FloorToInt(PlayerPosition.Y / (ChunkSize * 100)),
-        0);
-
-    for (int32 X = -RenderDistance; X <= RenderDistance; X++)
-    {
-        for (int32 Y = -RenderDistance; Y <= RenderDistance; Y++)
-        {
-            FIntVector ChunkCoords = PlayerChunkCoords + FIntVector(X, Y, 0);
-
-            if (!LoadedChunks.Contains(ChunkCoords))
-            {
-                LoadChunk(ChunkCoords);
-            }
-        }
-    }
-}
+//void AWorldManager::UpdateWorld(FVector playerposition)
+//{
+//    // Calculate current chunk coordinates based on player position
+//    FIntVector PlayerChunkCoords(
+//        FMath::FloorToInt(PlayerPosition.X / (ChunkSize * 100)),
+//        FMath::FloorToInt(PlayerPosition.Y / (ChunkSize * 100)),
+//        0);
+//
+//    for (int32 X = -RenderDistance; X <= RenderDistance; X++)
+//    {
+//        for (int32 Y = -RenderDistance; Y <= RenderDistance; Y++)
+//        {
+//            FIntVector ChunkCoords = PlayerChunkCoords + FIntVector(X, Y, 0);
+//
+//            if (!LoadedChunks.Contains(ChunkCoords))
+//            {
+//                LoadChunk(ChunkCoords);
+//            }
+//        }
+//    }
+//}
 
 // Called when the game starts or when spawned
 void AWorldManager::BeginPlay()
@@ -54,6 +55,15 @@ void AWorldManager::BeginPlay()
 	
     // Generate the biome map
     GenerateBiomeMap(Seed);
+
+    // Example of loading chunks in a 10x10 grid for demonstration
+    for (int32 X = 0; X < GridSize; X++)
+    {
+        for (int32 Y = 0; Y < GridSize; Y++)
+        {
+            LoadChunk(FIntVector(X, Y, 0));
+        }
+    }
 }
 
 // Called every frame
@@ -61,9 +71,19 @@ void AWorldManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    // Update PlayerPosition if the player moves, which affects LOD calculation
+    APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+    if (PlayerController)
+    {
+        APawn* PlayerPawn = PlayerController->GetPawn();
+        if (PlayerPawn)
+        {
+            PlayerPosition = PlayerPawn->GetActorLocation();
+        }
+    }
 	// Get player location
-	FVector PlayerPosition = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
-	UpdateWorld(PlayerPosition);
+	//PlayerPosition = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
+	//UpdateWorld(PlayerPosition);
 }
 
 void AWorldManager::LoadChunk(FIntVector ChunkCoords)
@@ -80,9 +100,11 @@ void AWorldManager::LoadChunk(FIntVector ChunkCoords)
 
         // Get the biome for this chunk
         EBiomeType Biome = GetBiomeForChunk(ChunkCoords);
+        // Calculate the LOD level based on player distance
+        ELODLevel LODLevel = CalculateLODLevel(ChunkPosition);
 
         NewChunk->InitializeChunk(ChunkPosition, ChunkSize, 100);
-        NewChunk->GenerateChunk(BlockMesh, Seed, NoiseScale, NoiseStrength, TempScale, MoistureScale, Biome);
+        NewChunk->GenerateChunk(BlockMesh, Seed, NoiseScale, NoiseStrength, TempScale, MoistureScale, Biome, LODLevel);
         LoadedChunks.Add(ChunkCoords, NewChunk);
     }
 
@@ -140,5 +162,24 @@ EBiomeType AWorldManager::GetBiomeForChunk(FIntVector ChunkCoords)
 
     // Return the biome for this chunk's region
     return BiomeMap[BiomeX + BiomeY * BiomeMapSize];
+}
+
+ELODLevel AWorldManager::CalculateLODLevel(FVector ChunkPosition)
+{
+
+    float Distance = FVector::Dist(PlayerPosition, ChunkPosition);
+
+    if (Distance < LODHighDistance)
+    {
+        return ELODLevel::LOD_High;
+    }
+    else if (Distance < LODMediumDistance)
+    {
+        return ELODLevel::LOD_Medium;
+    }
+    else
+    {
+        return ELODLevel::LOD_Low;
+    }
 }
 

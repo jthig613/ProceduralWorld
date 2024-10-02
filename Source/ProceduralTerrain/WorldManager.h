@@ -20,13 +20,27 @@ public:
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	int32 ChunkSize;
 
+	FVector PlayerPosition;
+
+	// Distances for LOD thresholds
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LOD")
+	float LODHighDistance = 1000.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LOD")
+	float LODMediumDistance = 3000.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LOD")
+	float LODLowDistance = 6000.0f;
+
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	int32 RenderDistance;
 
+	//the grid of the map
+	UPROPERTY(EditAnywhere, Category = "World Settings")
+	int32 GridSize;
+
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	UStaticMesh* BlockMesh;
-
-	void UpdateWorld(FVector PlayerPosition);
 
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	int32 Seed;              // A fixed seed value or you could generate one
@@ -88,4 +102,6 @@ private:
 
 	void GenerateBiomeMap(int32 Seed);
 	EBiomeType GetBiomeForChunk(FIntVector ChunkCoords);
+
+	ELODLevel CalculateLODLevel(FVector ChunkPosition);
 };

@@ -8,6 +8,15 @@
 #include "BiomeType.h"
 #include "Chunk.generated.h"
 
+UENUM(BlueprintType)
+enum class ELODLevel : uint8
+{
+	LOD_High UMETA(DisplayName = "High"),
+	LOD_Medium UMETA(DisplayName = "Medium"),
+	LOD_Low UMETA(DisplayName = "Low")
+};
+
+
 UCLASS()
 class PROCEDURALTERRAIN_API AChunk : public AActor
 {
@@ -21,7 +30,7 @@ public:
 	void InitializeChunk(FVector InChunkPosition, int32 InChunkSize, int32 InBlockSize);
 
 	// Generate the blocks in this chunk
-	void GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale, EBiomeType NewBiome);
+	void GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale, EBiomeType NewBiome, ELODLevel LODLevel);
 
 	// Set up LOD for the chunk
 	void UpdateLOD(float PlayerDistance);
@@ -59,5 +68,5 @@ private:
 
 	UMaterialInterface* GetBiomeMaterial(EBiomeType Biome);
 
-	void AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh, UMaterialInterface* BlockMaterial);
+	void AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh, UMaterialInterface* BlockMaterial, ELODLevel LODLevel);
 };

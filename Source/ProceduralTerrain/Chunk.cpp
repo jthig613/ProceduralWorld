@@ -25,12 +25,34 @@ void AChunk::InitializeChunk(FVector InChunkPosition, int32 InChunkSize, int32 I
 	BlockSize = InBlockSize;
 }
 
-void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale, EBiomeType NewBiome)
+void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale, float NoiseStrength, float TempScale, float MoistureScale, EBiomeType NewBiome, ELODLevel LODLevel)
 {
 
     // Set block material based on biome
     UMaterialInterface* BlockMaterial = GetBiomeMaterial(NewBiome);
+
+    int32 LODChunkSize = ChunkSize;
+    int32 BlockSpacing = 1; // Default spacing between blocks for high LOD
+
     BlockMeshComponent->SetStaticMesh(BlockMesh);
+
+    // Adjust chunk resolution based on LOD level
+    switch (LODLevel)
+    {
+    case ELODLevel::LOD_High:
+        LODChunkSize = ChunkSize;  // Full detail
+        BlockSpacing = 1;
+        break;
+    case ELODLevel::LOD_Medium:
+        LODChunkSize = ChunkSize / 2;  // Half the detail
+        BlockSpacing = 2;
+        break;
+    case ELODLevel::LOD_Low:
+        LODChunkSize = ChunkSize / 4;  // Very simplified
+        BlockSpacing = 4;
+        break;
+    }
+
     // Simple noise-based generation for terrain height
     for (int32 X = 0; X < ChunkSize; X++)
     {
@@ -60,7 +82,7 @@ void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale,
 
             for (int32 Z = 0; Z < Height; Z++)
             {
-                AddBlock(X, Y, Z, BlockMesh, BlockMaterial); // Pass the appropriate block mesh
+                AddBlock(X, Y, Z, BlockMesh, BlockMaterial, LODLevel); // Pass the appropriate block mesh
             }
         }
     }
@@ -92,10 +114,10 @@ void AChunk::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
     ////// LOD
-    FVector PlayerPosition = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
-    auto Distance = PlayerPosition - GetActorLocation();
-    float DLength = Distance.Length();
-    UpdateLOD(DLength);
+    //FVector PlayerPosition = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorLocation();
+    //auto Distance = PlayerPosition - GetActorLocation();
+    //float DLength = Distance.Length();
+    //UpdateLOD(DLength);
     ////// LOD
 
 
@@ -121,10 +143,25 @@ UMaterialInterface* AChunk::GetBiomeMaterial(EBiomeType Biome)
     }
 }
 
-void AChunk::AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh, UMaterialInterface* BlockMaterial)
+void AChunk::AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh, UMaterialInterface* BlockMaterial, ELODLevel LODLevel)
 {
     FVector BlockLocation = FVector(X * BlockSize, Y * BlockSize, Z * BlockSize);
     FTransform BlockTransform(FRotator(0, 0, 0), BlockLocation);
+
+    // Adjust the scale of blocks for lower LOD levels
+    FVector BlockScale = FVector(1.0f, 1.0f, 1.0f);
+    switch (LODLevel)
+    {
+    case ELODLevel::LOD_High:
+        BlockScale = FVector(1.0f);  // Normal scale
+        break;
+    case ELODLevel::LOD_Medium:
+        BlockScale = FVector(2.0f);  // Larger blocks
+        break;
+    case ELODLevel::LOD_Low:
+        BlockScale = FVector(4.0f);  // Even larger blocks
+        break;
+    }
 
     // Create the instanced static mesh for this block
     int32 InstanceIndex = BlockMeshComponent->AddInstance(BlockTransform);
