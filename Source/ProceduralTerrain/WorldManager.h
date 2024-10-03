@@ -59,20 +59,17 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	int32 Seed;              // A fixed seed value or you could generate one
-
+	//Demonstration seeds
 	//Temp seed 8622241
+	//Good seed 7829618
 
+	// Determines the spread of hills
 	UPROPERTY(EditAnywhere, Category = "World Settings")
-	float NoiseScale;          // The scale of the noise
+	float NoiseScale;          
+
+	//Determines the height of the terrain. 3.0 being low hills, 7.0 being mountains
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	float NoiseStrength;
-
-	UPROPERTY(EditAnywhere, Category = "World Settings")
-	float CaveNoiseScale;          // The scale of the noise
-	UPROPERTY(EditAnywhere, Category = "World Settings")
-	float CaveNoiseStrength;
-	UPROPERTY(EditAnywhere, Category = "World Settings")
-	float CaveThreshold;
 
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	float TempScale;          // The scale of the noise

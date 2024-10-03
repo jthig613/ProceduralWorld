@@ -9,9 +9,6 @@
 AWorldManager::AWorldManager() :
     NoiseScale(0.05f),
     NoiseStrength(4.f),
-    CaveNoiseScale(0.08f),
-    CaveNoiseStrength(10.f),
-    CaveThreshold(0.3f),
     TempScale(0.02f),
     MoistureScale(0.03f),
     BiomeSizeInChunks(4),

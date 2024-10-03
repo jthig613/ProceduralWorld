@@ -68,5 +68,7 @@ private:
 
 	UMaterialInterface* GetBiomeMaterial(EBiomeType Biome);
 
+	float GetBiomeNoiseStrength(EBiomeType Biome);
+
 	void AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh, UMaterialInterface* BlockMaterial, ELODLevel LODLevel);
 };

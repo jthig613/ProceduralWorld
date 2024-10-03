@@ -30,6 +30,7 @@ void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale,
 
     // Set block material based on biome
     UMaterialInterface* BlockMaterial = GetBiomeMaterial(NewBiome);
+    float NewStrength = GetBiomeNoiseStrength(NewBiome);
 
     int32 LODChunkSize = ChunkSize;
     int32 BlockSpacing = 1; // Default spacing between blocks for high LOD
@@ -59,11 +60,24 @@ void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale,
         for (int32 Y = 0; Y < ChunkSize; Y++)
         {
             // Use TerrainGenerator to generate a noise value for height
-            float NoiseValue = TerrainGenerator::GenerateNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, NoiseScale, NoiseStrength, Seed);
-            UE_LOG(LogTemp, Warning, TEXT("Noise Value: %f"), NoiseValue);
+           //float NoiseValue = TerrainGenerator::GenerateNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, NoiseScale, NoiseStrength, Seed);
+            //UE_LOG(LogTemp, Warning, TEXT("Noise Value: %f"), NoiseValue);
             
             // Scale the noise value to get a usable height
-            int32 Height = FMath::RoundToInt(NoiseValue * NoiseStrength);
+            //int32 Height = FMath::RoundToInt(NoiseValue * NoiseStrength);
+
+            ////TEST
+
+
+            // Use TerrainGenerator to generate a noise value for height
+            float NoiseValue = TerrainGenerator::GenerateNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, NoiseScale, NewStrength, Seed);
+            UE_LOG(LogTemp, Warning, TEXT("Noise Value: %f"), NoiseValue);
+
+            // Scale the noise value to get a usable height
+            int32 Height = FMath::RoundToInt(NoiseValue * NewStrength);
+
+
+
             
             //int32 Height = FMath::RandRange(0, 10);
 
@@ -140,6 +154,23 @@ UMaterialInterface* AChunk::GetBiomeMaterial(EBiomeType Biome)
         return PlainsMaterial;
     default:
         return DefaultMaterial;
+    }
+}
+
+float AChunk::GetBiomeNoiseStrength(EBiomeType Biome)
+{
+    switch (Biome)
+    {
+    case EBiomeType::Desert:
+        return 3.f;
+    case EBiomeType::Forest:
+        return 4.f;
+    case EBiomeType::Tundra:
+        return 6.f;
+    case EBiomeType::Plains:
+        return 2.f;
+    default:
+        return 1.f;
     }
 }
 
