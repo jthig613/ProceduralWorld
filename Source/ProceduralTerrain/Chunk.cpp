@@ -12,7 +12,7 @@
 AChunk::AChunk()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	BlockMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("BlockMesh"));
     RootComponent = BlockMeshComponent;
     
@@ -162,13 +162,13 @@ float AChunk::GetBiomeNoiseStrength(EBiomeType Biome)
     switch (Biome)
     {
     case EBiomeType::Desert:
-        return 3.f;
-    case EBiomeType::Forest:
         return 4.f;
-    case EBiomeType::Tundra:
-        return 6.f;
-    case EBiomeType::Plains:
+    case EBiomeType::Forest:
         return 2.f;
+    case EBiomeType::Tundra:
+        return 7.f;
+    case EBiomeType::Plains:
+        return 3.f;
     default:
         return 1.f;
     }
