@@ -5,6 +5,7 @@
 #include "Engine/InstancedStaticMesh.h"
 #include "Kismet/GameplayStatics.h"
 #include "BiomeType.h"
+#include "Math/UnrealMathUtility.h"
 #include "TerrainGenerator.h"
 
 
@@ -59,14 +60,8 @@ void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale,
     {
         for (int32 Y = 0; Y < ChunkSize; Y++)
         {
-            // Use TerrainGenerator to generate a noise value for height
-           //float NoiseValue = TerrainGenerator::GenerateNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, NoiseScale, NoiseStrength, Seed);
-            //UE_LOG(LogTemp, Warning, TEXT("Noise Value: %f"), NoiseValue);
-            
-            // Scale the noise value to get a usable height
-            //int32 Height = FMath::RoundToInt(NoiseValue * NoiseStrength);
 
-            ////TEST
+            ////////////////////////
 
 
             // Use TerrainGenerator to generate a noise value for height
@@ -84,19 +79,9 @@ void AChunk::GenerateChunk(UStaticMesh* BlockMesh, int32 Seed, float NoiseScale,
             // Ensure height is within a valid range (e.g., minimum height 1)
             Height = FMath::Clamp(Height, 1, ChunkSize);
 
-            // Generate temperature and moisture values for biome determination
-            //float Temperature = TerrainGenerator::GenerateTemperatureNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, TempScale, NoiseStrength, Seed);
-            //float Moisture = TerrainGenerator::GenerateMoistureNoise(ChunkPosition.X + X, ChunkPosition.Y + Y, MoistureScale, NoiseStrength, Seed);
-
-            // Determine the biome based on temperature and moisture
-            //EBiomeType Biome = TerrainGenerator::DetermineBiome(Temperature, Moisture);
-
-            // Set block material based on biome
-           //UMaterialInterface* BlockMaterial = GetBiomeMaterial(NewBiome);
-
             for (int32 Z = 0; Z < Height; Z++)
             {
-                AddBlock(X, Y, Z, BlockMesh, BlockMaterial, LODLevel); // Pass the appropriate block mesh
+               AddBlock(X, Y, Z, BlockMesh, BlockMaterial, LODLevel); // Pass the appropriate block mesh
             }
         }
     }
