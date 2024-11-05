@@ -4,16 +4,6 @@
 
 #include "CoreMinimal.h"
 
-/**
- * 
- */
-//class PROCEDURALTERRAIN_API BiomeType
-//{
-//public:
-//	BiomeType();
-//	~BiomeType();
-//};
-
 //We define our biome types here to be referenced later
 UENUM(BlueprintType)
 enum class EBiomeType : uint8

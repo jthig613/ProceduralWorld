@@ -190,6 +190,5 @@ void AChunk::AddBlock(int32 X, int32 Y, int32 Z, UStaticMesh* BlockMesh, UMateri
     else {
         UE_LOG(LogTemp, Warning, TEXT("No material added"));
     }
-    //BlockMeshComponent->AddInstance(BlockTransform);
 }
 

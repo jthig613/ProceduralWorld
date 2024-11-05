@@ -50,7 +50,7 @@ public:
 
 
 
-	//the grid of the map
+	// The grid of the map
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	int32 GridSize;
 
@@ -60,7 +60,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "World Settings")
 	int32 Seed;              // A fixed seed value or you could generate one
 	//Demonstration seeds
-	//Temp seed 8622241
 	//Good seed 7829618
 	
 

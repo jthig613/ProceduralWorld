@@ -8,11 +8,6 @@
 
 float TerrainGenerator::GenerateNoise(float X, float Y, float NoiseScale, float NoiseStrength, int32 Seed)
 {
-    
-    /*FastNoiseLite NoiseGenerator;
-    NoiseGenerator.SetSeed(Seed);
-    NoiseGenerator.SetFrequency(Scale);*/
-
     // Use noise function to generate smooth terrain heights.
     return FMath::PerlinNoise2D(FVector2D(X * NoiseScale + (0.1 * Seed), Y * NoiseScale + (0.1 * Seed))) * NoiseStrength;
 }

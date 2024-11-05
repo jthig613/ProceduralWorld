@@ -3,10 +3,3 @@
 
 #include "BiomeType.h"
 
-//BiomeType::BiomeType()
-//{
-//}
-//
-//BiomeType::~BiomeType()
-//{
-//}
